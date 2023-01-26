@@ -128,6 +128,7 @@ jobs:
           corepack disable
           pnpm install
           pnpm run build
+          echo "RUNNING NEXTJS VERSION: $(packages/next/dist/bin/next --version)"
 
       - run: |
           docker run --rm -v $(pwd):/work mcr.microsoft.com/playwright:v1.28.1-focal /bin/bash -c "cd /work && ls && curl https://install-node.vercel.app/v${{ matrix.node }} | FORCE=1 bash && node -v && npm i -g pnpm@${PNPM_VERSION} && /work/next-dev --display-version && __INTERNAL_CUSTOM_TURBOPACK_BINARY=${NEXT_DEV_BIN} __INTERNAL_NEXT_DEV_TEST_TURBO_GLOB_MATCH=${NEXT_DEV_TEST_GLOB} NEXT_TEST_JOB=1 NEXT_TEST_MODE=dev xvfb-run node run-tests.js --type development --timings -g ${{ matrix.group }}/4 >> /proc/1/fd/1"

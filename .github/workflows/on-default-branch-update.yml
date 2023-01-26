@@ -1,0 +1,45 @@
+# A workflow supposed to run when there is a new changes committed in default branch.
+name: On Default Branch Update
+on:
+  push:
+    branches:
+      - main
+      - upload-test-data
+
+#nextjs-integration-test-data
+jobs:
+  next_js_integration:
+    name: Execute Next.js integration workflow
+    uses: ./.github/workflows/nextjs-integration-test.yml
+
+  collect_nextjs_integration_stat:
+    needs: [next_js_integration]
+    name: Next.js integration test status report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Collect integration test stat
+        uses: ./.github/actions/next-integration-stat
+
+      - name: Store artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: nextjs-test-results.json
+
+  upload_test_results:
+    name: Upload test results
+    runs-on: ubuntu-latest
+    needs: [collect_nextjs_integration_stat]
+    steps:
+      - name: Grab test results
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - name: dummy
+        run: |
+          ls -al ./artifacts/test-results
+          cat ./artifacts/test-results/nextjs-test-results.json
